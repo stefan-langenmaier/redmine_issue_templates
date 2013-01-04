@@ -21,8 +21,14 @@ function load_template(evt, target_url, token) {
       {asynchronous:true, evalScripts:true, 
          onComplete:function(request){
            eval("var template = " + request.responseText);
-           $('issue_description').value = template.description
-           $('issue_subject').value = template.issue_title
+           $('issue_description').value = template.description;
+           $('issue_subject').value = template.issue_title;
+           try {
+              if (CKEDITOR.instances.issue_description)
+                CKEDITOR.instances.issue_description.setData(template.description);
+           } catch(e) {
+              // do nothing.
+           }
          },
        parameters:'issue_template=' + encodeURIComponent(evt.target.value)
          + '&authenticity_token=' + encodeURIComponent(token)
