@@ -9,7 +9,7 @@ class IssueTemplateSetting < ActiveRecord::Base
   safe_attributes 'help_message', 'enabled', 'inherit_templates', 'should_replaced'
 	
   def self.find_or_create(project_id)	
-    setting = IssueTemplateSetting.find(:first, :conditions => ['project_id = ?', project_id])
+    setting = IssueTemplateSetting.where(:project_id => project_id).first
     unless setting
       setting = IssueTemplateSetting.new
       setting.project_id = project_id

@@ -8,8 +8,9 @@ class IssueTemplatesController < ApplicationController
   before_filter :find_object, :only => [ :show, :edit, :destroy ]
   before_filter :find_user, :find_project, :authorize, 
     :except => [ :preview, :move_order_higher, :move_order_lower, 
-                 :move_order_to_top, :move_order_to_bottom, :move ]
+                 :move_order_to_top, :move_order_to_bottom, :move, :global_index, :global_new ]
   before_filter :find_tracker, :only => [ :set_pulldown ]
+  before_filter :require_admin, :find_user, :only => [ :global_index, :global_new, :global_show ]
 
   def index
     tracker_ids = IssueTemplate.where('project_id = ?', @project.id).pluck(:tracker_id)
@@ -150,6 +151,32 @@ class IssueTemplatesController < ApplicationController
   # Reorder templates
   def move
     move_order(params[:to])
+  end
+
+  #
+  # Action for global template : Admin right is required.
+  #
+  def global_index
+    @issue_templates = IssueTemplate.where('project_id = 0')
+    #render :text => "#{@issue_templates.size} Now implementing...."
+  end
+
+  def global_new
+    # create empty instance
+    @trackers = Tracker.all
+    @issue_template = IssueTemplate.new(:author => @user, :project_id => 0,
+                                        :tracker => @tracker)
+    if request.post?
+      # Case post, set attributes passed as parameters.
+      @issue_template.safe_attributes = params[:issue_template]
+      if @issue_template.save
+        flash[:notice] = l(:notice_successful_create)
+        redirect_to :action => "global_show", :id => @issue_template.id
+      end
+    end
+  end
+
+  def global_show
   end
     
   private
